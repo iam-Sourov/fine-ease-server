@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const port = 3000
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 app.use(cors());
 app.use(express.json());
@@ -19,27 +19,56 @@ const client = new MongoClient(uri, {
     }
 });
 
-app.get('/', (req, res) => {
-    res.send('sss World!')
-})
+
 
 async function run() {
     try {
         await client.connect();
 
         const db = client.db("finease")
+        const transactionCollection = db.collection('transactions')
 
-        const transactionCollection = db.collection('transaction')
-
+        // get All Transactionsby Specific user
         app.get('/my-transactions', async (req, res) => {
-
-        })
-
-        app.post('/addTransaction', async (req, res) => {
-            const newTransaction = req.body;
-            const result = await addTransactionCollection.insertOne(newTransaction);
+            const email = req.query.email;
+            const query = {}
+            if (email) {
+                query.email = email;
+            }
+            const result = await transactionCollection.find(query).toArray()
             res.send(result)
         })
+
+        // Add a Transaction 
+        app.post('/add-Transaction', async (req, res) => {
+            const newTransaction = req.body;
+            const result = await transactionCollection.insertOne(newTransaction);
+            res.send(result)
+        })
+
+        // Get Signle Transaction by id
+        app.get('/transaction/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await transactionCollection.findOne(query);
+            res.send(result);
+        })
+
+        // update Transaction by id
+        app.put('/transactions/update/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedData = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const data = { $set: updatedData };
+            const result = await transactionCollection.updateOne(filter, data);
+            res.send(result)
+        })
+        // Delete
+        app.delete('/transaction/delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await transactionCollection.deleteOne({ _id: new ObjectId(id) });
+            res.send(result);
+        });
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
