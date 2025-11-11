@@ -39,15 +39,12 @@ async function run() {
             if (email) {
                 query.email = email;
             }
-            const result = await transactionCollection.find(query).sort({ amount: -1,date: -1 }).toArray();
+            const result = await transactionCollection.find(query).sort({ amount: -1, date: -1 }).toArray();
             res.send(result)
         })
         // Add a Transaction 
         app.post('/add-Transaction', async (req, res) => {
-            const newTransaction = {
-                ...req.body,
-                date: new Date(req.body.date)
-            };
+            const newTransaction = req.body;
             const result = await transactionCollection.insertOne(newTransaction);
             res.send(result)
         })
