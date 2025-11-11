@@ -27,12 +27,12 @@ async function run() {
 
         const db = client.db("finease")
         const transactionCollection = db.collection('transactions')
-        // all data
+
         app.get('/', async (req, res) => {
             const result = await transactionCollection.find().toArray();
             res.send(result)
         })
-        // get All Transactionsby Specific user
+
         app.get('/my-transactions', async (req, res) => {
             const email = req.query.email;
             const query = {}
@@ -42,7 +42,7 @@ async function run() {
             const result = await transactionCollection.find(query).sort({ amount: -1, date: -1 }).toArray();
             res.send(result)
         })
-        // Add a Transaction 
+
         app.post('/add-Transaction', async (req, res) => {
             const newTransaction = req.body;
             const result = await transactionCollection.insertOne(newTransaction);
@@ -56,7 +56,7 @@ async function run() {
             const result = await transactionCollection.updateOne(filter, data);
             res.send(result)
         })
-        // Delete api
+
         app.delete('/transaction/delete/:id', async (req, res) => {
             const id = req.params.id;
             const result = await transactionCollection.deleteOne({ _id: new ObjectId(id) });
@@ -80,4 +80,3 @@ client.connect()
         })
     })
     .catch(console.dir)
-
